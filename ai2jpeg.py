@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import warnings
+import logging 
 
 from PIL import Image, ImageOps, ImageChops
 from pdf2image import convert_from_path
@@ -59,28 +60,38 @@ def convertMirrorCropBatch(inputFolder, outputFolder):
     files2Convert = findFiles('*.ai', inputFolder)
 
     for file2Convert in files2Convert:
-        print('Working on ' + file2Convert)
-        img = convert_from_path(inputFolder + '/' + file2Convert, use_pdftocairo=True, single_file=True)
-        baseFilename  =  os.path.splitext(os.path.basename(file2Convert))[0] + '.jpg'
-        #img[0].save(outputFolder + '/' + baseFilename, 'JPEG')
-        imgMirror = mirrorImg(img[0])
-        imgCrop = cropImg(imgMirror)
-        imgMirror.save(outputFolder + '/' + baseFilename, quality=95)
-        imgCrop.save(outputFolder + '/cropped-mirror/' + baseFilename, quality=95)
+        try:
+            print('Working on ' + file2Convert)
+            img = convert_from_path(inputFolder + '/' + file2Convert, use_pdftocairo=True, single_file=True)
+            baseFilename  =  os.path.splitext(os.path.basename(file2Convert))[0] + '.jpg'
+            #img[0].save(outputFolder + '/' + baseFilename, 'JPEG')
+            imgMirror = mirrorImg(img[0])
+            imgCrop = cropImg(imgMirror)
+            imgMirror.save(outputFolder + '/' + baseFilename, quality=95)
+            imgCrop.save(outputFolder + '/cropped-mirror/' + baseFilename, quality=95)
+        except:
+            pass
 
 
 def main(inputFolder, outputFolder):
     print ('Converting *.ai files...')
     convertMirrorCropBatch(inputFolder, outputFolder)
 
+warnings.simplefilter('ignore', Image.DecompressionBombWarning)
+logging.basicConfig(filename="ai2jpeg.log", format='%(asctime)s %(message)s', filemode='w') 
+logger=logging.getLogger() 
+  
+#Setting the threshold of logger to DEBUG 
+logger.setLevel(logging.DEBUG)
+
 if __name__ == "__main__":
-    warnings.simplefilter('ignore', Image.DecompressionBombWarning)
     try:
         inputFolder = sys.argv[1]
         outputFolder = sys.argv[2]
     except:
         inputFolder = './input'
         outputFolder = './output'
+        
     main(inputFolder, outputFolder)
 
 #ai2JpegCairo('./input', './output')
