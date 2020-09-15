@@ -1,0 +1,6 @@
+./input
+!input/.gitignore
+./output
+./output/cropped-mirror
+!output/.gitignore
+!output/cropped-mirror/.gitignore
